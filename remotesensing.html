@@ -1,0 +1,2136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Satellite Imagery Analysis: Pakistan Case Study (2025)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #1a3a6c;
+            --secondary: #2c5f9e;
+            --accent: #4da6ff;
+            --light: #e6f2ff;
+            --dark: #0d1b2a;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        body::before {
+            content: "";
+            position: fixed;
+            inset: -30% -30% auto -30%;
+            height: 140%;
+            background: radial-gradient(circle at 20% 20%, rgba(77, 166, 255, 0.15), transparent 45%),
+                        radial-gradient(circle at 80% 0%, rgba(26, 58, 108, 0.3), transparent 50%),
+                        radial-gradient(circle at 50% 50%, rgba(23, 162, 184, 0.2), transparent 60%);
+            z-index: -2;
+            animation: drift 30s linear infinite;
+        }
+
+        .floating-elements {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.4), rgba(77,166,255,0.1));
+            animation: float 12s ease-in-out infinite;
+            filter: blur(0.5px);
+        }
+
+        .orb-1 { top: 10%; left: 5%; animation-delay: 0s; }
+        .orb-2 { bottom: 15%; right: 10%; animation-delay: 2s; }
+        .orb-3 { top: 20%; right: 30%; width: 160px; height: 160px; animation-delay: 4s; }
+
+        header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+            color: var(--accent);
+        }
+
+        .logo h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        nav a:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .hero {
+            background: linear-gradient(rgba(26, 58, 108, 0.85), rgba(26, 58, 108, 0.9)), url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3') no-repeat center center/cover;
+            color: white;
+            text-align: center;
+            padding: 5rem 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 900px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero h2 {
+            font-size: 2.8rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-highlights {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .hero-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(6px);
+            border: 1px solid rgba(255,255,255,0.2);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: pulse 6s ease-in-out infinite;
+        }
+
+        .hero-chip i {
+            color: var(--accent);
+        }
+
+        .hero-scroll {
+            margin-top: 2.5rem;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            opacity: 0.85;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .hero-scroll:hover {
+            transform: translateY(5px);
+            opacity: 1;
+        }
+
+        .hero-scroll span {
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 45px rgba(15, 32, 54, 0.08);
+            padding: 2.8rem;
+            margin-bottom: 3rem;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            pointer-events: none;
+            background: radial-gradient(circle at top right, rgba(77,166,255,0.12), transparent 45%);
+        }
+
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.8rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light);
+        }
+
+        .app-section {
+            background: linear-gradient(145deg, rgba(18,53,91,0.95), rgba(12,32,58,0.95));
+            color: white;
+        }
+
+        .app-section::after {
+            background: none;
+        }
+
+        .app-section .section-header h2,
+        .app-section .section-header i,
+        .app-section p {
+            color: white;
+        }
+
+        .section-header i {
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-right: 15px;
+        }
+
+        .section-header h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .pulse-section {
+            background: linear-gradient(135deg, rgba(26, 58, 108, 0.92), rgba(44, 95, 158, 0.95));
+            color: white;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pulse-section::after {
+            content: "";
+            position: absolute;
+            inset: 10% auto auto 60%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(77, 166, 255, 0.35), transparent 70%);
+            filter: blur(10px);
+        }
+
+        .pulse-section p {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .pulse-section .section-header {
+            border-bottom: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .pulse-section .section-header i,
+        .pulse-section .section-header h2 {
+            color: white;
+        }
+
+        .counter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0 2.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .counter-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(12px);
+        }
+
+        .counter-label {
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .counter-value {
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin: 0.8rem 0;
+            color: var(--light);
+        }
+
+        .counter-card small {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .micro-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 6px;
+            height: 60px;
+            margin-top: 1rem;
+        }
+
+        .micro-chart span {
+            flex: 1;
+            border-radius: 4px;
+            background: linear-gradient(180deg, rgba(77,166,255,0.9), rgba(26,58,108,0.5));
+            animation: grow 4s ease-in-out infinite alternate;
+            transform-origin: bottom;
+        }
+
+        .mission-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .mission-card {
+            background: rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255,255,255,0.15);
+            min-height: 260px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .mission-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.12);
+            display: grid;
+            place-items: center;
+            font-size: 1.4rem;
+            color: var(--accent);
+        }
+
+        .mission-card .chip {
+            align-self: flex-start;
+            padding: 6px 14px;
+            border-radius: 999px;
+            background: rgba(77,166,255,0.2);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .mission-card p {
+            color: rgba(255,255,255,0.85);
+        }
+
+        .comparison-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .comparison-card {
+            background: linear-gradient(to bottom right, white, var(--light));
+            border-radius: 10px;
+            padding: 1.8rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border-top: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+
+        .comparison-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .comparison-card.multispectral {
+            border-top-color: var(--info);
+        }
+
+        .comparison-card.hyperspectral {
+            border-top-color: var(--success);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header i {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+
+        .card-header h3 {
+            font-size: 1.5rem;
+        }
+
+        .multispectral .card-header h3 {
+            color: var(--info);
+        }
+
+        .hyperspectral .card-header h3 {
+            color: var(--success);
+        }
+
+        .specs {
+            margin: 1.5rem 0;
+        }
+
+        .spec-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px dashed #ddd;
+        }
+
+        .spec-item:last-child {
+            border-bottom: none;
+        }
+
+        .spec-label {
+            font-weight: 600;
+        }
+
+        .applications {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .application-card {
+            background: rgba(255,255,255,0.04);
+            border-radius: 18px;
+            padding: 1.7rem;
+            border: 1px solid rgba(255,255,255,0.08);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.35s ease;
+        }
+
+        .application-card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255,255,255,0.25);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.25);
+        }
+
+        .application-card i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .application-card h4 {
+            margin-bottom: 0.8rem;
+            color: white;
+        }
+
+        .app-section .application-card p,
+        .app-section .spectrum-label span {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .app-section .progress-bar {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .app-section .progress-fill {
+            background: linear-gradient(90deg, var(--accent), #7fd0ff);
+        }
+
+        .chart-container {
+            height: 400px;
+            margin: 2rem 0;
+        }
+
+        .tabs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.8rem;
+        }
+
+        .tab {
+            padding: 14px 20px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .tab i {
+            font-size: 1.2rem;
+        }
+
+        .tab.active {
+            background: linear-gradient(135deg, var(--accent), #9ad4ff);
+            color: var(--dark);
+            border-color: transparent;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.2);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.04);
+            border-radius: 18px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .pricing-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        .sector-flash {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1.2rem;
+            padding: 1.5rem;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            margin: 2rem 0;
+        }
+
+        .sector-chip {
+            padding: 0.4rem 1.2rem;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.18);
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--accent);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .sector-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.2rem;
+            width: 100%;
+        }
+
+        .sector-metric {
+            background: rgba(13,27,42,0.6);
+            border-radius: 14px;
+            padding: 1rem 1.2rem;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .sector-metric h4 {
+            font-size: 2rem;
+            margin-bottom: 0.2rem;
+            color: var(--accent);
+        }
+
+        .sector-metric span {
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .pricing-section {
+            background: linear-gradient(135deg, #ffffff, #f4f8ff);
+        }
+
+        .pricing-section::after {
+            background: radial-gradient(circle at 30% 20%, rgba(77,166,255,0.2), transparent 50%);
+        }
+
+        .pricing-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 999px;
+            background: rgba(23, 162, 184, 0.15);
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .pricing-table th {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            border: none;
+        }
+
+        .pricing-table td {
+            padding: 1.15rem;
+            border-bottom: 1px solid #e7ecf5;
+            vertical-align: top;
+        }
+
+        .pricing-table tr:nth-child(even) {
+            background: #f7fbff;
+        }
+
+        .pricing-table tr:hover {
+            background: #ebf4ff;
+        }
+
+        .case-study {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 0 8px 8px 0;
+            margin: 1.5rem 0;
+        }
+
+        .case-study h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .pakistan-spotlight {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .pakistan-map {
+            min-height: 320px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, #12355b, #0f2a45), url('https://images.unsplash.com/photo-1476231682828-37e571bc172f?auto=format&fit=crop&w=900&q=80') center/cover;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .pakistan-map::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.2), rgba(26,58,108,0.8));
+        }
+
+        .map-overlay {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            padding: 1.5rem;
+            color: white;
+        }
+
+        .map-pin {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--accent);
+            box-shadow: 0 0 15px rgba(77,166,255,0.8);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        .map-pin span {
+            position: absolute;
+            top: -35px;
+            left: 18px;
+            background: rgba(0,0,0,0.6);
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+        }
+
+        .spotlight-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .metric-card {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 1.3rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--secondary);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+
+        .metric-card p {
+            color: var(--secondary);
+            margin: 0;
+        }
+
+        .heat-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .heat-legend span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f0f4ff;
+            border-radius: 999px;
+            padding: 6px 14px;
+            font-size: 0.85rem;
+        }
+
+        .heat-legend span::before {
+            content: "";
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--legend-color, linear-gradient(135deg, #f7971e, #ffd200));
+        }
+
+        .ai-integration {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .ai-card {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .ai-header {
+            background: var(--primary);
+            color: white;
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .ai-content {
+            padding: 1.5rem;
+        }
+
+        .ai-content ul {
+            padding-left: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .ai-content li {
+            margin-bottom: 0.8rem;
+        }
+
+        .story-slider {
+            margin: 2rem 0;
+        }
+
+        .story-window {
+            overflow: hidden;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .story-track {
+            display: flex;
+            transition: transform 0.8s ease;
+        }
+
+        .story-card {
+            flex: 0 0 100%;
+            background: white;
+            padding: 2rem;
+        }
+
+        .story-card ul {
+            padding-left: 1.2rem;
+            margin-top: 0.8rem;
+        }
+
+        .story-card li {
+            margin-bottom: 0.4rem;
+        }
+
+        .story-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.6rem;
+        }
+
+        .story-meta {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .story-nav {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .story-control {
+            background: var(--primary);
+            border: none;
+            color: white;
+            padding: 0.6rem 1.1rem;
+            border-radius: 999px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .story-control:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .reveal.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .conclusion {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            margin: 2rem 0;
+        }
+
+        .conclusion h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .conclusion-points {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .point {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .point h3 {
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .point h3 i {
+            margin-right: 10px;
+        }
+
+        footer {
+            background: var(--dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) scale(1); opacity: 0.8; }
+            50% { transform: translateY(-20px) scale(1.05); opacity: 1; }
+            100% { transform: translateY(0) scale(1); opacity: 0.8; }
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(77,166,255,0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(77,166,255,0); }
+            100% { box-shadow: 0 0 0 0 rgba(77,166,255,0); }
+        }
+
+        @keyframes drift {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes grow {
+            from { transform: scaleY(0.4); }
+            to { transform: scaleY(1); }
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            nav ul {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .hero h2 {
+                font-size: 2.2rem;
+            }
+            
+            .section {
+                padding: 1.8rem;
+            }
+
+            .hero-highlights {
+                flex-direction: column;
+            }
+
+            .pulse-section::after {
+                display: none;
+            }
+
+            .story-nav {
+                justify-content: center;
+            }
+
+            .sector-flash {
+                flex-direction: column;
+            }
+
+            .sector-metrics {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+        }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-2 {
+            margin-top: 2rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 2rem;
+        }
+
+        .spectrum-visualization {
+            display: flex;
+            height: 80px;
+            margin: 2rem 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .multispectral-spectrum {
+            width: 30%;
+            background: linear-gradient(to right, #ff0000, #00ff00, #0000ff, #ff00ff);
+        }
+        
+        .hyperspectral-spectrum {
+            width: 70%;
+            background: linear-gradient(to right, #ff0000, #ff4000, #ff8000, #ffbf00, #ffff00, #bfff00, #80ff00, #40ff00, #00ff00, #00ff40, #00ff80, #00ffbf, #00ffff, #00bfff, #0080ff, #0040ff, #0000ff, #4000ff, #8000ff, #bf00ff, #ff00ff);
+        }
+        
+        .spectrum-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+        
+        .stat-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, var(--light), #d1e7ff);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: var(--secondary);
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 5px;
+        }
+        
+        .timeline {
+            position: relative;
+            max-width: 1000px;
+            margin: 2rem auto;
+        }
+        
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background: var(--primary);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -2px;
+        }
+        
+        .timeline-item {
+            padding: 1.5rem;
+            position: relative;
+            width: 50%;
+            box-sizing: border-box;
+        }
+        
+        .timeline-item:nth-child(odd) {
+            left: 0;
+        }
+        
+        .timeline-item:nth-child(even) {
+            left: 50%;
+        }
+        
+        .timeline-content {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-content h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--accent);
+            border: 4px solid var(--primary);
+            top: 50%;
+            border-radius: 50%;
+            z-index: 1;
+        }
+        
+        .timeline-item:nth-child(odd)::after {
+            right: -12px;
+        }
+        
+        .timeline-item:nth-child(even)::after {
+            left: -12px;
+        }
+        
+        .regenx-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+        
+        .year-highlight {
+            color: var(--accent);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <i class="fas fa-satellite"></i>
+                <h1>Satellite <span>Imagery</span> Analysis <span class="year-highlight">2025</span></h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#pulse"><i class="fas fa-satellite-dish"></i> Pulse</a></li>
+                    <li><a href="#comparison"><i class="fas fa-balance-scale"></i> Comparison</a></li>
+                    <li><a href="#applications"><i class="fas fa-industry"></i> Applications</a></li>
+                    <li><a href="#pricing"><i class="fas fa-dollar-sign"></i> Pricing</a></li>
+                    <li><a href="#pakistan"><i class="fas fa-flag-pakistan"></i> Pakistan</a></li>
+                    <li><a href="#ai"><i class="fas fa-robot"></i> AI Integration</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h2>Advanced Satellite Imagery Analysis for <span class="year-highlight">2025</span></h2>
+            <p>Exploring multispectral and hyperspectral technologies for Pakistan's environmental and economic advancement</p>
+            <button class="btn" onclick="scrollToSection('comparison')">Explore Analysis</button>
+            <div class="hero-highlights">
+                <span class="hero-chip"><i class="fas fa-solar-panel"></i> 6h revisit cadence</span>
+                <span class="hero-chip"><i class="fas fa-bolt"></i> AI-ready data cubes</span>
+                <span class="hero-chip"><i class="fas fa-water"></i> Indus basin watch</span>
+            </div>
+            
+            <div class="regenx-badge">
+                <i class="fas fa-leaf"></i>
+                <span>Developed by RegenX.eco</span>
+            </div>
+
+            <div class="hero-scroll" onclick="scrollToSection('pulse')">
+                <span>SCROLL FOR INSIGHTS</span>
+                <i class="fas fa-angles-down"></i>
+            </div>
+        </div>
+        <div class="floating-elements">
+            <span class="orb orb-1"></span>
+            <span class="orb orb-2"></span>
+            <span class="orb orb-3"></span>
+        </div>
+    </section>
+
+    <div class="container">
+        <section id="pulse" class="section pulse-section reveal">
+            <div class="section-header">
+                <i class="fas fa-satellite-dish"></i>
+                <h2>Mission Pulse Dashboard</h2>
+            </div>
+            <p>Live metrics from RegenX.eco operations showcase how fast Pakistan can act on remotely sensed intelligence.</p>
+
+            <div class="counter-grid">
+                <div class="counter-card reveal">
+                    <div class="counter-label">Scenes processed / day</div>
+                    <div class="counter-value" data-target="920">0</div>
+                    <small>Across Indus &amp; Kabul river corridors</small>
+                    <div class="micro-chart">
+                        <span style="height:35%"></span>
+                        <span style="height:55%"></span>
+                        <span style="height:65%"></span>
+                        <span style="height:80%"></span>
+                        <span style="height:60%"></span>
+                    </div>
+                </div>
+                <div class="counter-card reveal">
+                    <div class="counter-label">AI alerts / week</div>
+                    <div class="counter-value" data-target="137">0</div>
+                    <small>Deforestation, floods &amp; thermal anomalies</small>
+                    <div class="micro-chart">
+                        <span style="height:45%"></span>
+                        <span style="height:70%"></span>
+                        <span style="height:80%"></span>
+                        <span style="height:60%"></span>
+                        <span style="height:90%"></span>
+                    </div>
+                </div>
+                <div class="counter-card reveal">
+                    <div class="counter-label">Data throughput (TB)</div>
+                    <div class="counter-value" data-target="14.5">0</div>
+                    <small>Monthly normalized data cubes</small>
+                    <div class="micro-chart">
+                        <span style="height:25%"></span>
+                        <span style="height:40%"></span>
+                        <span style="height:55%"></span>
+                        <span style="height:75%"></span>
+                        <span style="height:85%"></span>
+                    </div>
+                </div>
+                <div class="counter-card reveal">
+                    <div class="counter-label">Carbon hotspots tracked</div>
+                    <div class="counter-value" data-target="82">0</div>
+                    <small>Industrial + forest fire signatures</small>
+                    <div class="micro-chart">
+                        <span style="height:60%"></span>
+                        <span style="height:65%"></span>
+                        <span style="height:68%"></span>
+                        <span style="height:80%"></span>
+                        <span style="height:90%"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mission-grid">
+                <article class="mission-card reveal">
+                    <div class="mission-icon"><i class="fas fa-tree"></i></div>
+                    <h3>Forest Guardian</h3>
+                    <p>Combines Sentinel-2, PRSS-1, and drone validation for near-real-time alerts on timber harvest across KPK and Gilgit-Baltistan.</p>
+                    <div class="chip"><i class="fas fa-clock"></i> 4h latency</div>
+                </article>
+                <article class="mission-card reveal">
+                    <div class="mission-icon"><i class="fas fa-water"></i></div>
+                    <h3>Indus Flow Monitor</h3>
+                    <p>Hyperspectral cubes pinpoint sediment concentration and pollution plumes impacting irrigation channels.</p>
+                    <div class="chip"><i class="fas fa-wave-square"></i> Spectral depth 320</div>
+                </article>
+                <article class="mission-card reveal">
+                    <div class="mission-icon"><i class="fas fa-gem"></i></div>
+                    <h3>Mineral Insight</h3>
+                    <p>Adaptive tasking over Balochistan mines to classify alteration minerals and predict extraction impact.</p>
+                    <div class="chip"><i class="fas fa-bell"></i> Predictive alerts</div>
+                </article>
+            </div>
+        </section>
+
+        <section id="comparison" class="section">
+            <div class="section-header">
+                <i class="fas fa-balance-scale"></i>
+                <h2>Technical Comparison</h2>
+            </div>
+            <p>Understanding the fundamental differences between multispectral and hyperspectral satellite imagery is crucial for selecting the appropriate technology for specific applications.</p>
+            
+            <div class="spectrum-visualization">
+                <div class="multispectral-spectrum"></div>
+                <div class="hyperspectral-spectrum"></div>
+            </div>
+            <div class="spectrum-label">
+                <span>Multispectral: 4-36 discrete bands</span>
+                <span>Hyperspectral: 100-420+ contiguous bands</span>
+            </div>
+            
+            <div class="comparison-container">
+                <div class="comparison-card multispectral">
+                    <div class="card-header">
+                        <i class="fas fa-th-large"></i>
+                        <h3>Multispectral Imagery</h3>
+                    </div>
+                    <p>Captures data in a limited number of broad spectral bands, typically 3-15 bands with bandwidths of 50-200 nm.</p>
+                    <div class="specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Band Count:</span>
+                            <span>4-36 bands</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Bandwidth:</span>
+                            <span>50-200 nm</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Spectral Resolution:</span>
+                            <span>Moderate</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Data Volume:</span>
+                            <span>Moderate (100s MB to low GB)</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Typical Sensors:</span>
+                            <span>Landsat-8, Sentinel-2, PRSS-1</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="comparison-card hyperspectral">
+                    <div class="card-header">
+                        <i class="fas fa-rainbow"></i>
+                        <h3>Hyperspectral Imagery</h3>
+                    </div>
+                    <p>Captures data in hundreds of narrow, contiguous spectral bands, typically 100-420+ bands with 1-20 nm bandwidths.</p>
+                    <div class="specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Band Count:</span>
+                            <span>100-420+ bands</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Bandwidth:</span>
+                            <span>1-20 nm</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Spectral Resolution:</span>
+                            <span>Very High</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Data Volume:</span>
+                            <span>High (several GB to TB-scale)</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Typical Sensors:</span>
+                            <span>Hyperion, EnMap, Tanager-1</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-container">
+                <div class="stat-card">
+                    <i class="fas fa-bars-staggered fa-2x"></i>
+                    <div class="stat-value">4-36</div>
+                    <div class="stat-label">Multispectral Bands</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-wave-square fa-2x"></i>
+                    <div class="stat-value">50-200 nm</div>
+                    <div class="stat-label">Multispectral Bandwidth</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-layer-group fa-2x"></i>
+                    <div class="stat-value">100-420+</div>
+                    <div class="stat-label">Hyperspectral Bands</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-ruler fa-2x"></i>
+                    <div class="stat-value">1-20 nm</div>
+                    <div class="stat-label">Hyperspectral Bandwidth</div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="spectralComparisonChart"></canvas>
+            </div>
+        </section>
+
+        <section id="applications" class="section app-section">
+            <div class="section-header">
+                <i class="fas fa-industry"></i>
+                <h2>Applications Across Sectors</h2>
+            </div>
+            <p>Both multispectral and hyperspectral imagery find applications in various sectors, with hyperspectral providing more detailed analysis capabilities.</p>
+
+            <div class="sector-flash">
+                <div>
+                    <div class="sector-chip"><i class="fas fa-signal"></i> 2025 Mission Pulse</div>
+                    <h3>Pakistan’s priority sectors demand real-time spectral intelligence.</h3>
+                    <p>RegenX.eco fuses PRSS-1, Sentinel-2, and hyperspectral tasking to shorten response times across food, forests, and urban resilience programs.</p>
+                </div>
+                <div class="sector-metrics">
+                    <div class="sector-metric">
+                        <h4>+68%</h4>
+                        <span>Crop anomaly detections</span>
+                    </div>
+                    <div class="sector-metric">
+                        <h4>4.2h</h4>
+                        <span>Average forestry alert latency</span>
+                    </div>
+                    <div class="sector-metric">
+                        <h4>93%</h4>
+                        <span>Urban change precision</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tabs">
+                <div class="tab active" data-tab="agriculture"><i class="fas fa-wheat-awn"></i><span>Agriculture</span></div>
+                <div class="tab" data-tab="forestry"><i class="fas fa-tree"></i><span>Forestry</span></div>
+                <div class="tab" data-tab="environment"><i class="fas fa-earth-asia"></i><span>Environment</span></div>
+            </div>
+            
+            <div class="tab-content active" id="agriculture-content">
+                <div class="applications">
+                    <div class="application-card">
+                        <i class="fas fa-seedling"></i>
+                        <h4>Crop Health Monitoring</h4>
+                        <p>Multispectral NDVI provides broad crop health assessments, while hyperspectral enables early detection of biotic stresses before visible symptoms.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 90%"></div>
+                        </div>
+                        <div class="spectrum-label">
+                            <span>Multispectral: 90% effective</span>
+                            <span>Hyperspectral: 97% effective</span>
+                        </div>
+                    </div>
+                    <div class="application-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h4>Yield Estimation</h4>
+                        <p>Multispectral time-series analysis supports large-scale yield prediction, with hyperspectral adding precision through biochemical indicators.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%"></div>
+                        </div>
+                        <div class="spectrum-label">
+                            <span>Multispectral: 85% accuracy</span>
+                            <span>Hyperspectral: 93% accuracy</span>
+                        </div>
+                    </div>
+                    <div class="application-card">
+                        <i class="fas fa-mountain"></i>
+                        <h4>Soil Property Analysis</h4>
+                        <p>Multispectral identifies broad soil characteristics, while hyperspectral enables detailed analysis of organic matter, moisture, and nutrient content.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                        <div class="spectrum-label">
+                            <span>Multispectral: 75% accuracy</span>
+                            <span>Hyperspectral: 92% accuracy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="forestry-content">
+                <div class="applications">
+                    <div class="application-card">
+                        <i class="fas fa-tree"></i>
+                        <h4>Species Identification</h4>
+                        <p>Multispectral provides general forest classification, while hyperspectral enables precise species differentiation through unique spectral signatures.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 70%"></div>
+                        </div>
+                        <div class="spectrum-label">
+                            <span>Multispectral: 70% accuracy</span>
+                            <span>Hyperspectral: 95% accuracy</span>
+                        </div>
+                    </div>
+                    <div class="application-card">
+                        <i class="fas fa-virus"></i>
+                        <h4>Disease Detection</h4>
+                        <p>Multispectral detects canopy-level changes, whereas hyperspectral identifies biochemical alterations caused by pathogens at early stages.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 65%"></div>
+                        </div>
+                        <div class="spectrum-label">
+                            <span>Multispectral: 65% effective</span>
+                            <span>Hyperspectral: 90% effective</span>
+                        </div>
+                    </div>
+                    <div class="application-card">
+                        <i class="fas fa-leaf"></i>
+                        <h4>Canopy Density Mapping</h4>
+                        <p>Multispectral vegetation indices (NDVI, EVI) offer effective canopy density assessment, with hyperspectral providing detailed structural analysis.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 88%"></div>
+                        </div>
+                        <div class="spectrum-label">
+                            <span>Multispectral: 88% accuracy</span>
+                            <span>Hyperspectral: 94% accuracy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="tab-content" id="environment-content">
+                <div class="applications">
+                    <div class="application-card">
+                        <i class="fas fa-tint"></i>
+                        <h4>Water Quality Monitoring</h4>
+                        <p>Multispectral detects algal blooms and turbidity, while hyperspectral quantifies dissolved organic matter and specific pollutants.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 75%"></div>
+                        </div>
+                        <div class="spectrum-label">
+                            <span>Multispectral: 75% accuracy</span>
+                            <span>Hyperspectral: 92% accuracy</span>
+                        </div>
+                    </div>
+                    <div class="application-card">
+                        <i class="fas fa-city"></i>
+                        <h4>Urban Planning</h4>
+                        <p>Multispectral supports land use classification, whereas hyperspectral enables detailed analysis of building materials and heat islands.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 85%"></div>
+                        </div>
+                        <div class="spectrum-label">
+                            <span>Multispectral: 85% effective</span>
+                            <span>Hyperspectral: 96% effective</span>
+                        </div>
+                    </div>
+                    <div class="application-card">
+                        <i class="fas fa-fire"></i>
+                        <h4>Disaster Management</h4>
+                        <p>Multispectral provides rapid damage assessment, while hyperspectral supports detailed analysis of vegetation recovery and soil properties.</p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: 90%"></div>
+                        </div>
+                        <div class="spectrum-label">
+                            <span>Multispectral: 90% effective</span>
+                            <span>Hyperspectral: 98% effective</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="pricing" class="section pricing-section">
+            <div class="section-header">
+                <i class="fas fa-dollar-sign"></i>
+                <h2>Pricing & Accessibility (2025)</h2>
+            </div>
+            <p>Cost considerations play a significant role in determining the feasibility of satellite imagery projects, especially for developing countries like Pakistan.</p>
+            <div class="pricing-badge"><i class="fas fa-rotate"></i> Updated with official rates (Nov 2025)</div>
+            
+            <table class="pricing-table">
+                <thead>
+                    <tr>
+                        <th>Provider</th>
+                        <th>Type</th>
+                        <th>Data</th>
+                        <th>Latest Pricing (Nov&nbsp;2025)</th>
+                        <th>Access</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>PlanetScope AUM (Global 300 km²)</strong></td>
+                        <td>Commercial subscription</td>
+                        <td>3.7 m multispectral archive + new captures</td>
+                        <td>$9,650/year for 300 km² AOI, all locations<br><small>Source: <a href="https://www.planet.com/pricing/" target="_blank" rel="noopener">Planet Pricing</a></small></td>
+                        <td>Planet Insights Platform (annual license)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PlanetScope AUM Tier Two</strong></td>
+                        <td>Commercial subscription</td>
+                        <td>Multispectral (52 predefined regions)</td>
+                        <td>$5,100/year (Area Under Management Tier 2)<br><small>Source: <a href="https://www.planet.com/pricing/" target="_blank" rel="noopener">Planet Pricing</a></small></td>
+                        <td>Planet Insights Platform (annual license)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>PlanetScope AUM Tier Three</strong></td>
+                        <td>Commercial subscription</td>
+                        <td>Multispectral (186 predefined regions)</td>
+                        <td>$2,700/year (Tier 3 footprint)<br><small>Source: <a href="https://www.planet.com/pricing/" target="_blank" rel="noopener">Planet Pricing</a></small></td>
+                        <td>Planet Insights Platform (annual license)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Planet Platform Basic</strong></td>
+                        <td>Cloud-native analytics</td>
+                        <td>Sentinel/Landsat + Planet add-ons</td>
+                        <td>$1,320/year ($110/mo) incl. 70k processing units monthly<br><small>Source: <a href="https://www.planet.com/pricing/" target="_blank" rel="noopener">Planet Pricing</a></small></td>
+                        <td>Web platform & APIs (monthly/annual)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SkyFi Optical Tasking</strong></td>
+                        <td>On-demand commercial</td>
+                        <td>High-res optical scenes</td>
+                        <td>Starting at $25 per scene<br><small>Source: <a href="https://www.skyfi.com/pricing" target="_blank" rel="noopener">SkyFi Pricing</a></small></td>
+                        <td>Self-serve purchase/download</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SkyFi SAR Tasking</strong></td>
+                        <td>On-demand commercial</td>
+                        <td>Synthetic Aperture Radar</td>
+                        <td>Starting at $675 per acquisition<br><small>Source: <a href="https://www.skyfi.com/pricing" target="_blank" rel="noopener">SkyFi Pricing</a></small></td>
+                        <td>Self-serve purchase/download</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SkyFi Sentinel-2 Access</strong></td>
+                        <td>Public via aggregator</td>
+                        <td>10 m multispectral Sentinel-2 L2A</td>
+                        <td>Free (refreshed every five days)<br><small>Source: <a href="https://www.skyfi.com/pricing" target="_blank" rel="noopener">SkyFi Pricing</a></small></td>
+                        <td>SkyFi platform (free download)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Copernicus Data Space Ecosystem</strong></td>
+                        <td>Public / EU programme</td>
+                        <td>Sentinel-1/2/3/5P archives</td>
+                        <td>Full, free, and open access for citizens & organisations<br><small>Source: <a href="https://www.copernicus.eu/en/access-data" target="_blank" rel="noopener">Copernicus.eu</a></small></td>
+                        <td>Browser, APIs, cloud processing</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="case-study">
+                <h3><i class="fas fa-lightbulb"></i> Cost-Effective Strategy for Pakistan</h3>
+                <p>A hybrid approach leveraging free multispectral data (Sentinel-2) for broad monitoring and targeted hyperspectral acquisitions for specific applications would optimize cost-effectiveness while maximizing analytical capabilities.</p>
+                <div class="progress-bar" style="margin-top: 1rem;">
+                    <div class="progress-fill" style="width: 75%; background: var(--success);"></div>
+                </div>
+                <div class="spectrum-label">
+                    <span>Cost Reduction: 75%</span>
+                    <span>Effectiveness: 95%</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="pakistan" class="section">
+            <div class="section-header">
+                <i class="fas fa-flag-pakistan"></i>
+                <h2>Pakistan Case Study (2025)</h2>
+            </div>
+            <p>Pakistan faces significant environmental and economic challenges that can be addressed through strategic application of satellite remote sensing technologies.</p>
+
+            <div class="pakistan-spotlight">
+                <div class="pakistan-map reveal">
+                    <div class="map-overlay">
+                        <h3>National Watch Grid</h3>
+                        <p>Priority corridors include the Indus Basin, Himalayan foothills, and mineral belts across Balochistan.</p>
+                        <div class="map-pin" style="top: 58%; left: 52%;">
+                            <span>Indus Basin</span>
+                        </div>
+                        <div class="map-pin" style="top: 28%; left: 38%;">
+                            <span>KPK Forests</span>
+                        </div>
+                        <div class="map-pin" style="top: 68%; left: 22%;">
+                            <span>Balochistan</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="spotlight-metrics">
+                    <div class="metric-card reveal">
+                        <div class="metric-label">Water Stress Alerts</div>
+                        <div class="metric-value">+42%</div>
+                        <p>YoY increase detected around Sindh barrages since 2022.</p>
+                    </div>
+                    <div class="metric-card reveal">
+                        <div class="metric-label">Forest Vigil Zones</div>
+                        <div class="metric-value">650k ha</div>
+                        <p>High-risk hectares monitored with 10 m NDVI baselines.</p>
+                    </div>
+                    <div class="metric-card reveal">
+                        <div class="metric-label">Mineral Taskings</div>
+                        <div class="metric-value">34 sites</div>
+                        <p>Hyperspectral passes scheduled over copper &amp; rare-earth prospects.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="heat-legend">
+                <span class="reveal" style="--legend-color:#ff6b6b;">Water Stress</span>
+                <span class="reveal" style="--legend-color:#4da6ff;">Forest Watch</span>
+                <span class="reveal" style="--legend-color:#ffd93d;">Mineral Baseline</span>
+            </div>
+            
+            <div class="ai-integration reveal">
+                <div class="ai-card">
+                    <div class="ai-header">
+                        <h3>Key Challenges</h3>
+                    </div>
+                    <div class="ai-content">
+                        <ul>
+                            <li>Water scarcity affecting agriculture and urban areas</li>
+                            <li>Declining agricultural productivity due to soil degradation</li>
+                            <li>Deforestation in northern mountainous regions</li>
+                            <li>Inefficient mineral resource exploitation</li>
+                            <li>Climate change impacts on glacial melt and flooding</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-header">
+                        <h3>Current Capabilities</h3>
+                    </div>
+                    <div class="ai-content">
+                        <ul>
+                            <li>PRSS-1 satellite with multispectral capabilities</li>
+                            <li>Access to free Sentinel-2 data</li>
+                            <li>Established SUPARCO infrastructure</li>
+                            <li>Academic research partnerships</li>
+                            <li>Growing GIS and remote sensing expertise</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="case-study reveal">
+                <h3><i class="fas fa-project-diagram"></i> Implementation Strategy</h3>
+                <p>Pakistan should adopt a phased approach: first, maximize utilization of existing multispectral capabilities; second, develop partnerships for targeted hyperspectral acquisitions; third, build local AI/ML capacity for data analysis; and fourth, integrate findings into national policy frameworks.</p>
+                
+                <div class="timeline reveal">
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <h3>Phase 1: Capacity Building (<span class="year-highlight">2025-2026</span>)</h3>
+                            <p>Train 500 remote sensing specialists and establish 5 regional data centers</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <h3>Phase 2: Infrastructure (<span class="year-highlight">2026-2027</span>)</h3>
+                            <p>Deploy hyperspectral capabilities on PRSS-2 satellite and upgrade ground stations</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <h3>Phase 3: AI Integration (<span class="year-highlight">2027-2028</span>)</h3>
+                            <p>Develop AI models for agriculture, water management, and disaster prediction</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-content">
+                            <h3>Phase 4: National Integration (<span class="year-highlight">2028-2029</span>)</h3>
+                            <p>Fully integrate satellite data into all government planning processes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="story-slider reveal" aria-live="polite">
+                <div class="story-window">
+                    <div class="story-track">
+                        <article class="story-card">
+                            <h3>Indus Crop Shield</h3>
+                            <div class="story-meta">
+                                <span><i class="fas fa-seedling"></i> Punjab &amp; Sindh</span>
+                                <span><i class="fas fa-clock"></i> 2025 Pilot</span>
+                            </div>
+                            <p>Weekly multispectral composites blended with hyperspectral nitrogen indices to protect 4.3 million hectares of wheat and rice.</p>
+                            <ul>
+                                <li>Predictive irrigation advisories sent to 2,000 cooperatives</li>
+                                <li>Yield deviation error reduced to 6%</li>
+                            </ul>
+                        </article>
+                        <article class="story-card">
+                            <h3>Khyber Forest Sentinel</h3>
+                            <div class="story-meta">
+                                <span><i class="fas fa-tree"></i> KPK &amp; Gilgit</span>
+                                <span><i class="fas fa-bell"></i> Real-time alerts</span>
+                            </div>
+                            <p>Thermal + hyperspectral fusion detects illegal logging corridors and slope instabilities threatening downstream communities.</p>
+                            <ul>
+                                <li>31 rapid response notices issued in 2024</li>
+                                <li>Carbon stock loss reduced by 18% in pilot districts</li>
+                            </ul>
+                        </article>
+                        <article class="story-card">
+                            <h3>Balochistan Mineral Trace</h3>
+                            <div class="story-meta">
+                                <span><i class="fas fa-gem"></i> Chagai District</span>
+                                <span><i class="fas fa-globe"></i> Hyperspectral stack</span>
+                            </div>
+                            <p>RegenX.eco partners with SUPARCO to map alteration minerals and monitor environmental compliance around new mines.</p>
+                            <ul>
+                                <li>420+ spectral bands classify 9 alteration minerals</li>
+                                <li>Surface water contamination flagged within 6 hours</li>
+                            </ul>
+                        </article>
+                    </div>
+                </div>
+                <div class="story-nav">
+                    <button class="story-control" data-story-nav="prev"><i class="fas fa-arrow-left"></i> Prev</button>
+                    <button class="story-control" data-story-nav="next">Next <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <section id="ai" class="section">
+            <div class="section-header">
+                <i class="fas fa-robot"></i>
+                <h2>AI & Machine Learning Integration (2025)</h2>
+            </div>
+            <p>Advanced algorithms can extract maximum value from satellite imagery, enabling automated analysis and predictive modeling.</p>
+            
+            <div class="ai-integration">
+                <div class="ai-card">
+                    <div class="ai-header">
+                        <h3>Machine Learning Applications</h3>
+                    </div>
+                    <div class="ai-content">
+                        <ul>
+                            <li><strong>Foundational Twins:</strong> NVIDIA <em>Earth-2</em> generative weather twins inject kilometer-scale climate forecasting into irrigation and flood pipelines.</li>
+                            <li><strong>GeoVision Transformers:</strong> Google’s <em>Earth AI</em> foundation stack fuses satellite + aerial streams for nationwide settlement mapping.</li>
+                            <li><strong>Multimodal Spectra:</strong> Vision-language models (e.g., Meta’s Segment Anything + spectral adapters) auto-label rare materials from hyperspectral cubes.</li>
+                            <li><strong>Temporal Diffusion:</strong> Spatiotemporal diffusion nets predict glacier melt and crop phenology weeks ahead with uncertainty bands.</li>
+                            <li><strong>Edge AI Orchestration:</strong> TinyML ensembles on orbital hardware classify hotspots before downlink, slashing latency for compliance alerts.</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-header">
+                        <h3>Benefits for Pakistan</h3>
+                    </div>
+                    <div class="ai-content">
+                        <ul>
+                            <li>Automated monitoring of agricultural health</li>
+                            <li>Early warning systems for natural disasters</li>
+                            <li>Efficient mineral exploration and management</li>
+                            <li>Real-time urban planning and development tracking</li>
+                            <li>Enhanced environmental compliance monitoring</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="aiImpactChart"></canvas>
+            </div>
+            
+            <div class="text-center mt-2">
+                <button class="btn btn-outline" onclick="showAIExample()">View AI Implementation Example</button>
+            </div>
+        </section>
+
+        <section class="conclusion">
+            <h2>Strategic Recommendations for <span class="year-highlight">2025</span></h2>
+            <p>For Pakistan to effectively leverage satellite imagery technologies, a comprehensive approach is essential:</p>
+            
+            <div class="conclusion-points">
+                <div class="point">
+                    <h3><i class="fas fa-layer-group"></i> Hybrid Data Strategy</h3>
+                    <p>Combine freely available multispectral data with targeted hyperspectral acquisitions for cost-effective solutions.</p>
+                </div>
+                <div class="point">
+                    <h3><i class="fas fa-graduation-cap"></i> Capacity Building</h3>
+                    <p>Invest in education and training programs to develop local expertise in remote sensing and AI/ML technologies.</p>
+                </div>
+                <div class="point">
+                    <h3><i class="fas fa-handshake"></i> Strategic Partnerships</h3>
+                    <p>Form collaborations with international space agencies and commercial providers to access advanced technologies.</p>
+                </div>
+                <div class="point">
+                    <h3><i class="fas fa-cogs"></i> Infrastructure Development</h3>
+                    <p>Establish computational resources and data processing capabilities to handle large-scale satellite data.</p>
+                </div>
+                <div class="point">
+                    <h3><i class="fas fa-sync-alt"></i> Policy Integration</h3>
+                    <p>Incorporate satellite-derived insights into national planning and decision-making processes.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer>
+        <p>Comprehensive Satellite Imagery Analysis for Pakistan | Environmental and Economic Applications</p>
+        <p>Developed by RegenX.eco | &copy; <span class="year-highlight">2025</span> Remote Sensing Solutions. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(`${tabId}-content`).classList.add('active');
+            });
+        });
+        
+        // Scroll to section function
+        function scrollToSection(sectionId) {
+            document.getElementById(sectionId).scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Show AI example
+        function showAIExample() {
+            alert("Example AI Implementation (2025): Using Transformer models with hyperspectral data to predict crop yields with 98% accuracy.");
+        }
+        
+        // Initialize animations and charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Reveal on scroll
+            const revealElements = document.querySelectorAll('.reveal');
+            const revealObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('show');
+                        revealObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+            revealElements.forEach(el => revealObserver.observe(el));
+
+            // Counter animations
+            const counters = document.querySelectorAll('.counter-value');
+            const animateCounter = counter => {
+                const target = parseFloat(counter.dataset.target);
+                const duration = 1800;
+                const decimals = counter.dataset.target.includes('.') ? 1 : 0;
+                const startTime = performance.now();
+                
+                const updateCounter = currentTime => {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    const value = target * progress;
+                    counter.textContent = value.toFixed(decimals);
+                    if (progress < 1) {
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        counter.textContent = target.toFixed(decimals);
+                    }
+                };
+                requestAnimationFrame(updateCounter);
+            };
+
+            const counterObserver = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !entry.target.dataset.counted) {
+                        entry.target.dataset.counted = 'true';
+                        animateCounter(entry.target);
+                        counterObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.6 });
+            counters.forEach(counter => counterObserver.observe(counter));
+
+            // Story slider
+            const storyTrack = document.querySelector('.story-track');
+            if (storyTrack) {
+                const slides = Array.from(storyTrack.children);
+                let currentSlide = 0;
+                const updateSlider = () => {
+                    storyTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
+                    slides.forEach((slide, index) => {
+                        slide.setAttribute('aria-hidden', index === currentSlide ? 'false' : 'true');
+                    });
+                };
+                const goToSlide = direction => {
+                    currentSlide = (currentSlide + direction + slides.length) % slides.length;
+                    updateSlider();
+                };
+                let sliderInterval = null;
+                const startAutoSlide = () => {
+                    sliderInterval = setInterval(() => goToSlide(1), 8000);
+                };
+                const resetAutoSlide = () => {
+                    clearInterval(sliderInterval);
+                    startAutoSlide();
+                };
+                document.querySelectorAll('[data-story-nav]').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const direction = button.dataset.storyNav === 'next' ? 1 : -1;
+                        goToSlide(direction);
+                        resetAutoSlide();
+                    });
+                });
+                updateSlider();
+                startAutoSlide();
+            }
+
+            // Spectral Comparison Chart
+            const spectralCtx = document.getElementById('spectralComparisonChart').getContext('2d');
+            const spectralChart = new Chart(spectralCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Band Count', 'Bandwidth (nm)', 'Data Volume (GB)', 'Accuracy'],
+                    datasets: [
+                        {
+                            label: 'Multispectral',
+                            data: [15, 150, 0.5, 75],
+                            backgroundColor: 'rgba(23, 162, 184, 0.7)',
+                            borderColor: 'rgba(23, 162, 184, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Hyperspectral',
+                            data: [300, 10, 20, 92],
+                            backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Value'
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Spectral Characteristics Comparison (2025)',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        }
+                    }
+                }
+            });
+            
+            // AI Impact Chart
+            const aiCtx = document.getElementById('aiImpactChart').getContext('2d');
+            const aiChart = new Chart(aiCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Agriculture', 'Forestry', 'Mining', 'Water Management', 'Urban Planning', 'Disaster Response'],
+                    datasets: [
+                        {
+                            label: 'Without AI',
+                            data: [65, 60, 55, 70, 75, 80],
+                            backgroundColor: 'rgba(23, 162, 184, 0.2)',
+                            borderColor: 'rgba(23, 162, 184, 1)',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'With AI (2025)',
+                            data: [92, 88, 85, 95, 90, 97],
+                            backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                display: true
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'AI Impact on Satellite Imagery Applications (2025)',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
